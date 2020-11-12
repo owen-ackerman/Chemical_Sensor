@@ -13,6 +13,8 @@ ser.baudrate = 115200
 ser.port = 'COM5'
 data = []
 header = ['CO2: ppm', 'TVOC: ppb']
+global f
+global z
 
 def TestCOM():
     try:
@@ -35,9 +37,13 @@ def FileNameCreator():
 def File():
     FileNameCreator()
     global f
-    f = csv.writer(open(filename, "w")) #open file, erase contents when writing
-    f.writerow(header)
+    global z
+    f = open(filename, 'w')  #open file, erase contents when writing
+    z = csv.writer(f)
+    z.writerow(header)
     time.sleep(3)
+
+File()
 
 def ReadWrite():
     ser.write(b'B')
@@ -48,15 +54,11 @@ def ReadWrite():
     if len(res) == 2: #excluding erronious data
         data = res
         print(data) 
-        f.writerow(data)
+        z.writerow(data)
 
 def scanning():
-    if state:  # Only do this if the Stop button has not been clicked
-        ser.open()
-        Run()
-
-    if not state:
-        ser.close()
+    if state:  # If start button was clicked
+        ReadWrite()
     # After 1 second, call scanning again (create a recursive loop)
     root.after(1000, scanning)
 
@@ -64,28 +66,25 @@ def start():
     """Enable scanning by setting the global flag to True."""
     global state
     state = True
+    ser.open()
 
 def stop():
     """Stop scanning by setting the global flag to False."""
     global state
     state = False
-
-def Run():
-    if ser.open:
-        File()
-
-    while ser.open:
-        ReadWrite()
+    ser.close()
+    f.close()
+    print("COM Closed")
 
 root = Tk()
 root.title("COM State")
-root.geometry("500x500")
+root.geometry("500x200")
 
 app = Frame(root)
 app.grid()
 
-start = Button(app, text="Open COM Port", command=start)
-stop = Button(app, text="Close COM Port", command=stop)
+start = Button(app, text="Open COM Port", command=start, fg="green")
+stop = Button(app, text="Close COM Port", command=stop, fg="red")
 
 start.grid()
 stop.grid()
