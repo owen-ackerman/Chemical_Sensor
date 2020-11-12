@@ -35,7 +35,7 @@ with open(filename, "w") as new_file: #open file, erase contents when writing
             print(data) 
         csv_writer.writerow(data) #save data to csv
         o += 1
-        if o > 400: #counter
+        if o > 477700: #counter
             print('\nThis is the end of the file\n')
             ser.close()
             break
