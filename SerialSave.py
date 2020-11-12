@@ -7,26 +7,37 @@ import os
 from pathlib import Path
 from tkinter import *
 
-state = True  # Global flag
+state = False  # Global flag
 ser = serial.Serial()
 ser.baudrate = 115200
 ser.port = 'COM5'
-i = 0
 data = []
 header = ['CO2: ppm', 'TVOC: ppb']
 
-while os.path.exists('datafile%d.csv' % i):
-    i += 1
-filename = ('datafile%d.csv' % i)
+def TestCOM():
+    try:
+        ser.open()# Open com port
+        print('COM port: ' + ser.name + ' connection secured')
+        ser.close()
+    except:
+        print("error securing COM Port")
 
+TestCOM()
+
+def FileNameCreator():
+    global i
+    i = 0
+    while os.path.exists('datafile%d.csv' % i):
+        i += 1
+    global filename
+    filename = ('datafile%d.csv' % i)
 
 def File():
+    FileNameCreator()
     global f
     f = csv.writer(open(filename, "w")) #open file, erase contents when writing
     f.writerow(header)
     time.sleep(3)
-
-File ()
 
 def ReadWrite():
     ser.write(b'B')
@@ -41,13 +52,11 @@ def ReadWrite():
 
 def scanning():
     if state:  # Only do this if the Stop button has not been clicked
-        try:
-            ser.open()# Open com port
-        except:
-            print("error opening COM Port")
-        print('Serial Port is open : ' + ser.name)
-        ReadWrite()
+        ser.open()
+        Run()
 
+    if not state:
+        ser.close()
     # After 1 second, call scanning again (create a recursive loop)
     root.after(1000, scanning)
 
@@ -61,6 +70,13 @@ def stop():
     global state
     state = False
 
+def Run():
+    if ser.open:
+        File()
+
+    while ser.open:
+        ReadWrite()
+
 root = Tk()
 root.title("COM State")
 root.geometry("500x500")
@@ -68,13 +84,12 @@ root.geometry("500x500")
 app = Frame(root)
 app.grid()
 
-start = Button(app, text="COM Port Open", command=start)
-stop = Button(app, text="COM Port Closed", command=stop)
+start = Button(app, text="Open COM Port", command=start)
+stop = Button(app, text="Close COM Port", command=stop)
 
 start.grid()
 stop.grid()
 
 root.after(1000, scanning)  # After 1 second, call scanning
 root.mainloop()
-print(state)
 
