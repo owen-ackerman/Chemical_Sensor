@@ -19,7 +19,7 @@ global z
 def TestCOM():
     try:
         ser.open()# Open com port
-        print('COM port: ' + ser.name + ' connection secured')
+        print('Port: ' + ser.name + ' connection secured')
         ser.close()
     except:
         print("error securing COM Port")
