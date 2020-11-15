@@ -2,7 +2,8 @@ import csv
 import os
 import time
 header = ['CO2: ppm', 'TVOC: ppb']
-
+data = []
+print(type(data))
 def FileNameCreator():
     global i
     i = 0
