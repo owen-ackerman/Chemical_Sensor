@@ -42,6 +42,7 @@ import re
 import os
 from pathlib import Path
 from tkinter import *
+import tkinter.scrolledtext as st 
 
 state = False  # Global flag
 ser = serial.Serial() # Initialize serial port
