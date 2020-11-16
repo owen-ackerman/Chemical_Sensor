@@ -43,13 +43,16 @@ import os
 from pathlib import Path
 from tkinter import *
 import tkinter.scrolledtext as st 
+from datetime import datetime
+from time import sleep
 
+frequency = 10000 #scanning and data collection frequency, miliseconds
 state = False  # Global flag
 ser = serial.Serial() # Initialize serial port
 ser.baudrate = 115200 # Set baud rate
 ser.port = 'COM5' #set com port
 data = [] # initialize variable data as list
-header = ['CO2: ppm', 'TVOC: ppb'] #initialize the header list
+header = ['CO2: ppm', 'TVOC: ppb', 'Time'] #initialize the header list
 global f # variable set to the csv file
 global z # variable set to the csv modifier (writer etc.)
 
@@ -90,6 +93,10 @@ def ReadWrite():
     res = list(map(int, num)) #maps the data to integers
     if len(res) == 2: #excluding erronious data
         data = res
+        now = datetime.now()
+        seconds = (now - now.replace(hour=0, minute=0, second=0, microsecond=0)).seconds
+        print(seconds)
+        data.append(seconds)
         print(data) #prints data to terminal
         z.writerow(data) #write data to csv file
         text_area.insert(INSERT, data)
@@ -100,7 +107,7 @@ def scanning():
     if state:  # If start button was clicked
         ReadWrite()
     # After 1 second, call scanning again (create a recursive loop)
-    root.after(1000, scanning)
+    root.after(frequency, scanning)
 
 def start():
     """Enable scanning by setting the global flag to True."""
@@ -118,7 +125,7 @@ def stop():
 
 root = Tk() #creates tk gui
 root.title("COM State") #title 
-root.geometry("210x500") #window size
+root.geometry("250x500") #window size
 
 start = Button(text="Open COM Port", command=start, fg="green") #buttons widget.
 stop = Button(text="Close COM Port", command=stop, fg="red")
@@ -135,13 +142,13 @@ w = Label(root,
 w.grid(row = 1, columnspan=2, sticky=W)
 
 text_area = st.ScrolledText(root, 
-                            width = 21, 
+                            width = 26, 
                             height = 20,  
                             font = ("Times New Roman", 
-                                    15)) 
+                                    12)) 
   
-text_area.grid(column = 0, pady = 10, padx = 3, columnspan = 2)
-text_area.configure(font=("Arial", 12))
+text_area.grid(column = 0, pady = 4, padx = 3, columnspan = 2)
+#text_area.configure(font=("Arial", 10))
 text_area.insert(INSERT, header)
 text_area.insert(INSERT, '\n')
 
