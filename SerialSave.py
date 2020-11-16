@@ -93,6 +93,8 @@ def ReadWrite():
         print(data) #prints data to terminal
         z.writerow(data) #write data to csv file
         text_area.insert(INSERT, data)
+        text_area.insert(INSERT, '\n')
+        
 
 def scanning():
     if state:  # If start button was clicked
@@ -133,16 +135,18 @@ w = Label(root,
 w.grid(row = 1, columnspan=2, sticky=W)
 
 text_area = st.ScrolledText(root, 
-                            width = 10,  
-                            height = 8,  
+                            width = 21, 
+                            height = 20,  
                             font = ("Times New Roman", 
                                     15)) 
   
-text_area.grid(column = 0, pady = 10, padx = 15, columnspan = 2)
- 
-  
+text_area.grid(column = 0, pady = 10, padx = 3, columnspan = 2)
+text_area.configure(font=("Arial", 12))
+text_area.insert(INSERT, header)
+text_area.insert(INSERT, '\n')
+
 # Making the text read only 
-text_area.configure(state ='disabled') 
+#text_area.configure(state ='disabled') 
   # After 1 second, call scanning
 root.after(1000, scanning)
 root.mainloop()
