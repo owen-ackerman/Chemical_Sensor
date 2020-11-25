@@ -46,7 +46,7 @@ import tkinter.scrolledtext as st
 from datetime import datetime
 from time import sleep
 
-frequency = 10000 #scanning and data collection frequency, miliseconds
+frequency = 5000 #scanning and data collection frequency, miliseconds
 state = False  # Global flag
 ser = serial.Serial() # Initialize serial port
 ser.baudrate = 115200 # Set baud rate
@@ -95,7 +95,7 @@ def ReadWrite():
         data = res
         now = datetime.now()
         seconds = (now - now.replace(hour=0, minute=0, second=0, microsecond=0)).seconds
-        print(seconds)
+        #print(seconds)
         data.append(seconds)
         print(data) #prints data to terminal
         z.writerow(data) #write data to csv file
