@@ -46,7 +46,7 @@ import tkinter.scrolledtext as st
 from datetime import datetime
 from time import sleep
 
-frequency = 5000 #scanning and data collection frequency, miliseconds
+frequency = 10000 #scanning and data collection frequency, miliseconds
 state = False  # Global flag
 ser = serial.Serial() # Initialize serial port
 ser.baudrate = 115200 # Set baud rate
