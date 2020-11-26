@@ -7,7 +7,7 @@ import os
 from pathlib import Path
 
 i = 0
-data = []
+data3 = []
 header = ['CO2: ppm', 'TVOC: ppb']
 while os.path.exists('datafile%d.csv' % i):
     i += 1
