@@ -46,111 +46,210 @@ import tkinter.scrolledtext as st
 from datetime import datetime
 from time import sleep
 
-frequency = 10000 #scanning and data collection frequency, miliseconds
-state = False  # Global flag
-ser = serial.Serial() # Initialize serial port
-ser.baudrate = 115200 # Set baud rate
-ser.port = 'COM5' #set com port
-data = [] # initialize variable data as list
-header = ['CO2: ppm', 'TVOC: ppb', 'Time'] #initialize the header list
+frequency = 1000 #scanning and data collection frequency, miliseconds
+state1 = False  # Global flag
+state2 = False
+ser1 = serial.Serial() # Initialize serial port
+ser2 = serial.Serial()
+ser1.baudrate = 115200 # Set baud rate
+ser2.baudrate = 115200
+ser1.port = 'COM7'
+ser2.port = 'COM5' #set com port
+data1 = [] # initialize variable data as list
+data2 = []
+header = ['CO2: ppm,', 'TVOC: ppb,', 'Time'] #initialize the header list
 global f # variable set to the csv file
 global z # variable set to the csv modifier (writer etc.)
 
-def TestCOM():
+def TestCOM1():
     try:
-        ser.open()# Open com port
-        print('Port: ' + ser.name + ' connection secured')
-        ser.close()
+        ser1.open()# Open com port
+        print('Port: ' + ser1.name + ' connection secured')
+        ser1.close()
     except:
-        print("error securing COM Port")
+        print("error securing Port: " + ser1.name)
 
-TestCOM()
+def TestCOM2():
+    try:
+        ser2.open()
+        print('Port: ' + ser2.name + ' connection secured')
+        ser2.close()
+    except:
+        print("error securing Port: " + ser2.name)
 
-def FileNameCreator():
+TestCOM1()
+TestCOM2()
+
+def FileNameCreator1():
     global i
+   
     i = 0 
-    while os.path.exists('datafile%d.csv' % i): #checks if the filename exists
+    while os.path.exists(ser1.name + 'Data%d.csv' % i): #checks if the filename exists
         i += 1 #increments if file name exists
-    global filename
-    filename = ('datafile%d.csv' % i) #sets the filename with the modified incrementor
+    global filename1
+    filename1 = (ser1.name + 'Data%d.csv' % i) #sets the filename with the modified incrementor
+    
+def FileNameCreator2():
+    global j
+    j = 0
+    while os.path.exists(ser2.name + 'Data%d.csv' % j): #checks if the filename exists
+        j += 1 #increments if file name exists
+    global filename2
+    filename2 = (ser2.name + 'Data%d.csv' % j) #sets the filename with the modified incrementor
 
-def File():
-    FileNameCreator()
-    global f
-    global z
-    f = open(filename, 'w')  #open file, erase contents when writing
-    z = csv.writer(f) #tells the csv.writer which function to modify
-    z.writerow(header) #writes the list header in the csv file
-    time.sleep(3) 
 
-File()
 
-def ReadWrite():
-    ser.write(b'B') #sets the incoming information as bytes
-    Bline = ser.readline() #read Data
-    line = str(Bline, 'utf-8') #bytes to string conversion
-    num = re.findall(r'\d+', line[3:]) #extract important numbers from Data
-    res = list(map(int, num)) #maps the data to integers
-    if len(res) == 2: #excluding erronious data
-        data = res
-        now = datetime.now()
-        seconds = (now - now.replace(hour=0, minute=0, second=0, microsecond=0)).seconds
-        #print(seconds)
-        data.append(seconds)
-        print(data) #prints data to terminal
-        z.writerow(data) #write data to csv file
-        text_area.insert(INSERT, data)
-        text_area.insert(INSERT, '\n')
+def File1():
+    FileNameCreator1()
+    global f1
+    global z1
+    f1 = open(filename1, 'w')  #open file, erase contents when writing
+    z1 = csv.writer(f1) #tells the csv.writer which function to modify
+    z1.writerow(header) #writes the list header in the csv file
+   
+def File2():
+    FileNameCreator2()
+    global f2
+    global z2
+    f2 = open(filename2, 'w')
+    z2 = csv.writer(f2)
+    z2.writerow(header)
+
+def ReadWrite1():
+    ser1.write(b'B') #sets the incoming information as bytes
+    Bline1 = ser1.readline() #read Data 
+    line1 = str(Bline1, 'utf-8') #bytes to string conversion
+    num1 = re.findall(r'\d+', line1[3:]) #extract important numbers from Data
+    res1 = list(map(int, num1)) #maps the data to integers
+    if len(res1) == 2: #excluding erronious data
+        data1 = res1
+        now1 = datetime.now()
+        seconds1 = (now1 - now1.replace(hour=0, minute=0, second=0, microsecond=0)).seconds
+        data1.append(seconds1)
+        print(data1) #prints data to terminal
+        z1.writerow(data1) #write data to csv file
+        text_area1.insert(INSERT, data1)
+        text_area1.insert(INSERT, '\n')
+        text_area1.yview('end')
+    
         
+def ReadWrite2():
+    ser2.write(b'B')
+    Bline2 = ser2.readline()
+    line2 = str(Bline2, 'utf-8')
+    num2 = re.findall(r'\d+', line2[3:])
+    res2 = list(map(int, num2))
+    if len(res2) == 2:
+        data2 = res2
+        now2 = datetime.now()
+        seconds2 = (now2 - now2.replace(hour=0, minute=0, second=0, microsecond=0)).seconds
+        data2.append(seconds2)
+        print(data2)
+        z2.writerow(data2)
+        text_area2.insert(INSERT, data2)
+        text_area2.insert(INSERT, '\n')
+        text_area2.yview('end')
 
 def scanning():
-    if state:  # If start button was clicked
-        ReadWrite()
+    if state1:  # If start button was clicked
+        ReadWrite1()
+
+    if state2:
+        ReadWrite2()
     # After 1 second, call scanning again (create a recursive loop)
     root.after(frequency, scanning)
 
-def start():
+def start1():
     """Enable scanning by setting the global flag to True."""
-    global state
-    state = True
-    ser.open() #opens serial port
+    File1()
+    ser1.open() #opens serial port
+    print(ser1.name + "opened")
+    global state1
+    state1 = True
+    
+    
 
-def stop():
+def start2():
+    """Enable scanning by setting the global flag to True."""
+    File2()
+    ser2.open() #opens serial port
+    print(ser2.name + "opened")
+    global state2
+    state2 = True
+    
+
+def stop1():
     """Stop scanning by setting the global flag to False."""
-    global state
-    state = False
-    ser.close() #closes serial port
-    f.close() #closes csv file
-    print("COM Closed")
+    global state1
+    state1 = False
+    ser1.close() #closes serial port
+    f1.close() #closes csv file
+    print(ser1.name + " Closed")
+
+def stop2():
+    """Stop scanning by setting the global flag to False."""
+    global state2
+    state2 = False
+    ser2.close() #closes serial port
+    f2.close() #closes csv file
+    print(ser2.name + " Closed")
 
 root = Tk() #creates tk gui
 root.title("COM State") #title 
-root.geometry("250x500") #window size
+root.geometry("600x500") #window size
 
-start = Button(text="Open COM Port", command=start, fg="green") #buttons widget.
-stop = Button(text="Close COM Port", command=stop, fg="red")
+start1 = Button(text="Open:" + ser1.name, command=start1, fg="green") #buttons widget.
+stop1 = Button(text="Close:" + ser1.name, command=stop1, fg="red")
+start2 = Button(text="Open:" + ser2.name, command=start2, fg="green")
+stop2 = Button(text="Close:" + ser2.name, command=stop2, fg="red")
 
-start.grid(column = 0, row = 0) #places buttons with the .grid() function
-stop.grid(column = 1, row = 0, sticky=W)
+TestCOM1 = Button(text="Test:" + ser1.name, command= TestCOM1, fg="purple")
+TestCOM2 = Button(text="Test:" + ser2.name, command= TestCOM2, fg="purple")
 
-w = Label(root,  
-         text = "ScrolledText Widget",  
+start1.grid(column = 0, row = 0) #places buttons with the .grid() function
+stop1.grid(column = 1, row = 0, sticky=W)
+start2.grid(column = 2, row = 0)
+stop2.grid(column = 3, row = 0, sticky=W)
+TestCOM1.grid(column=4, row =0)
+TestCOM2.grid(column=4, row = 1)
+
+w1 = Label(root,  
+         text = "ScrolledText Widget 1",  
          font = ("Times New Roman", 12),  
          background = 'blue', 
          padx = 40, 
          foreground = "white")
-w.grid(row = 1, columnspan=2, sticky=W)
+w1.grid(row = 2, columnspan=2, sticky=W)
 
-text_area = st.ScrolledText(root, 
+w2 = Label(root,  
+         text = "ScrolledText Widget 2",  
+         font = ("Times New Roman", 12),  
+         background = 'purple', 
+         padx = 40, 
+         foreground = "white")
+w2.grid(column = 2, row = 2, columnspan=2, sticky=W)
+
+text_area1 = st.ScrolledText(root, 
                             width = 26, 
                             height = 20,  
                             font = ("Times New Roman", 
                                     12)) 
-  
-text_area.grid(column = 0, pady = 4, padx = 3, columnspan = 2)
+
+text_area2 = st.ScrolledText(root, 
+                            width = 26, 
+                            height = 20,  
+                            font = ("Times New Roman", 
+                                    12)) 
+                                
+text_area2.grid(row = 3, column = 2, pady = 0, padx = 0, columnspan = 2) 
+text_area1.grid(row = 3, column = 0, pady = 0, padx = 0, columnspan = 2)
+
+
 #text_area.configure(font=("Arial", 10))
-text_area.insert(INSERT, header)
-text_area.insert(INSERT, '\n')
+text_area1.insert(INSERT, header)
+text_area1.insert(INSERT, '\n')
+text_area2.insert(INSERT, header)
+text_area2.insert(INSERT, '\n')
 
 # Making the text read only 
 #text_area.configure(state ='disabled') 
