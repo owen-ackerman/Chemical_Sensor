@@ -80,40 +80,24 @@ def TestCOM2():
 TestCOM1()
 TestCOM2()
 
-def FileNameCreator1():
+def FileNameCreator():
     global i
-   
     i = 0 
-    while os.path.exists(ser1.name + 'Data%d.csv' % i): #checks if the filename exists
+    x = datetime.now()
+    y = (x.strftime("%b") + "_" + x.strftime("%d") + "_" + x.strftime("%Y"))
+    while os.path.exists(y + 'Data%d.csv' % i): #checks if the filename exists
         i += 1 #increments if file name exists
-    global filename1
-    filename1 = (ser1.name + 'Data%d.csv' % i) #sets the filename with the modified incrementor
-    
-def FileNameCreator2():
-    global j
-    j = 0
-    while os.path.exists(ser2.name + 'Data%d.csv' % j): #checks if the filename exists
-        j += 1 #increments if file name exists
-    global filename2
-    filename2 = (ser2.name + 'Data%d.csv' % j) #sets the filename with the modified incrementor
+    global filename
+    filename = (y + 'Data%d.csv' % i) #sets the filename with the modified incrementor
 
 
-
-def File1():
-    FileNameCreator1()
-    global f1
-    global z1
-    f1 = open(filename1, 'w')  #open file, erase contents when writing
-    z1 = csv.writer(f1) #tells the csv.writer which function to modify
-    z1.writerow(header) #writes the list header in the csv file
-   
-def File2():
-    FileNameCreator2()
-    global f2
-    global z2
-    f2 = open(filename2, 'w')
-    z2 = csv.writer(f2)
-    z2.writerow(header)
+def File():
+    FileNameCreator()
+    global f
+    global z
+    f = open(filename, 'w')  #open file, erase contents when writing
+    z = csv.writer(f) #tells the csv.writer which function to modify
+    z.writerow(header) #writes the list header in the csv file
 
 def ReadWrite1():
     ser1.write(b'B') #sets the incoming information as bytes
@@ -159,30 +143,22 @@ def scanning():
     # After 1 second, call scanning again (create a recursive loop)
     root.after(frequency, scanning)
 
-def start1():
+def start():
     """Enable scanning by setting the global flag to True."""
-    File1()
+    File()
     ser1.open() #opens serial port
-    print(ser1.name + "opened")
+    ser2.open()
+    print(ser1.name + "Opened")
+    print(ser2.name + "Opened")
     global state1
     state1 = True
     
-    
-
-def start2():
-    """Enable scanning by setting the global flag to True."""
-    File2()
-    ser2.open() #opens serial port
-    print(ser2.name + "opened")
-    global state2
-    state2 = True
-    
-
-def stop1():
+def stop():
     """Stop scanning by setting the global flag to False."""
     global state1
     state1 = False
     ser1.close() #closes serial port
+    ser2.close()
     f1.close() #closes csv file
     print(ser1.name + " Closed")
 
@@ -198,10 +174,9 @@ root = Tk() #creates tk gui
 root.title("COM State") #title 
 root.geometry("600x500") #window size
 
-start1 = Button(text="Open:" + ser1.name, command=start1, fg="green") #buttons widget.
-stop1 = Button(text="Close:" + ser1.name, command=stop1, fg="red")
-start2 = Button(text="Open:" + ser2.name, command=start2, fg="green")
-stop2 = Button(text="Close:" + ser2.name, command=stop2, fg="red")
+start = Button(text="Open: COMS", command=start, fg="green") #buttons widget.
+stop = Button(text="Close: COMS", command=stop, fg="red")
+
 
 TestCOM1 = Button(text="Test:" + ser1.name, command= TestCOM1, fg="purple")
 TestCOM2 = Button(text="Test:" + ser2.name, command= TestCOM2, fg="purple")
