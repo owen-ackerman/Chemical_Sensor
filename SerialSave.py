@@ -47,19 +47,23 @@ from datetime import datetime
 from time import sleep
 
 frequency = 1000 #scanning and data collection frequency, miliseconds
-state1 = False  # Global flag
-state2 = False
+state = False  # Global flag
 ser1 = serial.Serial() # Initialize serial port
 ser2 = serial.Serial()
 ser1.baudrate = 115200 # Set baud rate
 ser2.baudrate = 115200
-ser1.port = 'COM7'
-ser2.port = 'COM5' #set com port
+ser1.port = 'COM5'
+ser2.port = 'COM8' #set com port
+global seconds
 data1 = [] # initialize variable data as list
-data2 = []
-header = ['CO2: ppm,', 'TVOC: ppb,', 'Time'] #initialize the header list
+data2 = [] #
+WholeData = [data1, data2] 
+header = ['Time Stamp', 'Data Source ID','CO2: ppm,', 'TVOC: ppb,', 'Data Source ID','CO2: ppm,', 'TVOC: ppb,'] #initialize the header list
+Scrolling_Header = ['Time Stamp', 'CO2: ppm,', 'TVOC: ppb,']
+
 global f # variable set to the csv file
 global z # variable set to the csv modifier (writer etc.)
+
 
 def TestCOM1():
     try:
@@ -99,47 +103,53 @@ def File():
     z = csv.writer(f) #tells the csv.writer which function to modify
     z.writerow(header) #writes the list header in the csv file
 
-def ReadWrite1():
+def Read1():
     ser1.write(b'B') #sets the incoming information as bytes
-    Bline1 = ser1.readline() #read Data 
-    line1 = str(Bline1, 'utf-8') #bytes to string conversion
-    num1 = re.findall(r'\d+', line1[3:]) #extract important numbers from Data
-    res1 = list(map(int, num1)) #maps the data to integers
-    if len(res1) == 2: #excluding erronious data
-        data1 = res1
-        now1 = datetime.now()
-        seconds1 = (now1 - now1.replace(hour=0, minute=0, second=0, microsecond=0)).seconds
-        data1.append(seconds1)
-        print(data1) #prints data to terminal
-        z1.writerow(data1) #write data to csv file
+    Bline = ser1.readline() #read Data 
+    line = str(Bline, 'utf-8') #bytes to string conversion
+    num = re.findall(r'\d+', line[3:]) #extract important numbers from Data
+    res = list(map(int, num)) #maps the data to integers
+    if len(res) == 2: #excluding erronious data
+        data1 = res
         text_area1.insert(INSERT, data1)
         text_area1.insert(INSERT, '\n')
         text_area1.yview('end')
-    
+        data1.append(ser1.name)
         
-def ReadWrite2():
+        
+def Read2():
     ser2.write(b'B')
-    Bline2 = ser2.readline()
-    line2 = str(Bline2, 'utf-8')
-    num2 = re.findall(r'\d+', line2[3:])
-    res2 = list(map(int, num2))
-    if len(res2) == 2:
-        data2 = res2
-        now2 = datetime.now()
-        seconds2 = (now2 - now2.replace(hour=0, minute=0, second=0, microsecond=0)).seconds
-        data2.append(seconds2)
-        print(data2)
-        z2.writerow(data2)
+    Bline = ser2.readline()
+    line = str(Bline, 'utf-8')
+    num = re.findall(r'\d+', line[3:])
+    res = list(map(int, num))
+    if len(res) == 2:
+        data2 = res
         text_area2.insert(INSERT, data2)
         text_area2.insert(INSERT, '\n')
         text_area2.yview('end')
+        data2.append(ser2.name)
+        
+
+def Time():
+    global seconds
+    now = datetime.now()
+    seconds = (now - now.replace(hour=0, minute=0, second=0, microsecond=0)).seconds
+
+def CombineWrite():
+    global WholeData
+    WholeData = data1 + data2
+    WholeData.append(seconds)
+    z.writerow(WholeData)
+    
 
 def scanning():
-    if state1:  # If start button was clicked
-        ReadWrite1()
+    if state:  # If start button was clicked
+        Read1()
+        Time()
+        Read2()
+        CombineWrite()
 
-    if state2:
-        ReadWrite2()
     # After 1 second, call scanning again (create a recursive loop)
     root.after(frequency, scanning)
 
@@ -150,43 +160,32 @@ def start():
     ser2.open()
     print(ser1.name + "Opened")
     print(ser2.name + "Opened")
-    global state1
-    state1 = True
+    global state
+    state = True
     
 def stop():
     """Stop scanning by setting the global flag to False."""
-    global state1
-    state1 = False
+    global state
+    state = False
     ser1.close() #closes serial port
     ser2.close()
-    f1.close() #closes csv file
+    f.close() #closes csv file
     print(ser1.name + " Closed")
-
-def stop2():
-    """Stop scanning by setting the global flag to False."""
-    global state2
-    state2 = False
-    ser2.close() #closes serial port
-    f2.close() #closes csv file
-    print(ser2.name + " Closed")
+    print(ser2.name + "Closed")
 
 root = Tk() #creates tk gui
 root.title("COM State") #title 
 root.geometry("600x500") #window size
 
-start = Button(text="Open: COMS", command=start, fg="green") #buttons widget.
-stop = Button(text="Close: COMS", command=stop, fg="red")
-
-
+start = Button(text="Open: COM", command=start, fg="green") #buttons widget.
+stop = Button(text="Close: COM", command=stop, fg="red")
 TestCOM1 = Button(text="Test:" + ser1.name, command= TestCOM1, fg="purple")
 TestCOM2 = Button(text="Test:" + ser2.name, command= TestCOM2, fg="purple")
 
-start1.grid(column = 0, row = 0) #places buttons with the .grid() function
-stop1.grid(column = 1, row = 0, sticky=W)
-start2.grid(column = 2, row = 0)
-stop2.grid(column = 3, row = 0, sticky=W)
-TestCOM1.grid(column=4, row =0)
-TestCOM2.grid(column=4, row = 1)
+start.grid(column = 0, row = 0) #places buttons with the .grid() function
+stop.grid(column = 1, row = 0, sticky=W)
+TestCOM1.grid(column=2, row =0)
+TestCOM2.grid(column=3, row = 0)
 
 w1 = Label(root,  
          text = "ScrolledText Widget 1",  
@@ -221,9 +220,9 @@ text_area1.grid(row = 3, column = 0, pady = 0, padx = 0, columnspan = 2)
 
 
 #text_area.configure(font=("Arial", 10))
-text_area1.insert(INSERT, header)
+text_area1.insert(INSERT, Scrolling_Header)
 text_area1.insert(INSERT, '\n')
-text_area2.insert(INSERT, header)
+text_area2.insert(INSERT, Scrolling_Header)
 text_area2.insert(INSERT, '\n')
 
 # Making the text read only 
