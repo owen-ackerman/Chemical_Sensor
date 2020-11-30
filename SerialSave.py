@@ -46,6 +46,11 @@ import tkinter.scrolledtext as st
 from datetime import datetime
 from time import sleep
 
+global seconds #timestamp for data collection
+global data1, data2 #incoming data from sensor 1 and sensor 2
+global f # variable set to the csv file
+global z # variable set to the csv modifier (writer etc.)
+
 frequency = 1000 #scanning and data collection frequency, miliseconds
 state = False  # Global flag
 ser1 = serial.Serial() # Initialize serial port
@@ -53,16 +58,13 @@ ser2 = serial.Serial()
 ser1.baudrate = 115200 # Set baud rate
 ser2.baudrate = 115200
 ser1.port = 'COM5'
-ser2.port = 'COM8' #set com port
-global seconds
+ser2.port = 'COM7' #set com port
 data1 = [] # initialize variable data as list
 data2 = [] #
-WholeData = [data1, data2] 
 header = ['Time Stamp', 'Data Source ID','CO2: ppm,', 'TVOC: ppb,', 'Data Source ID','CO2: ppm,', 'TVOC: ppb,'] #initialize the header list
 Scrolling_Header = ['Time Stamp', 'CO2: ppm,', 'TVOC: ppb,']
 
-global f # variable set to the csv file
-global z # variable set to the csv modifier (writer etc.)
+
 
 
 def TestCOM1():
@@ -104,6 +106,7 @@ def File():
     z.writerow(header) #writes the list header in the csv file
 
 def Read1():
+    global data1
     ser1.write(b'B') #sets the incoming information as bytes
     Bline = ser1.readline() #read Data 
     line = str(Bline, 'utf-8') #bytes to string conversion
@@ -114,10 +117,11 @@ def Read1():
         text_area1.insert(INSERT, data1)
         text_area1.insert(INSERT, '\n')
         text_area1.yview('end')
-        data1.append(ser1.name)
+        data1.insert(0, ser1.name)
         
         
 def Read2():
+    global data2
     ser2.write(b'B')
     Bline = ser2.readline()
     line = str(Bline, 'utf-8')
@@ -128,8 +132,7 @@ def Read2():
         text_area2.insert(INSERT, data2)
         text_area2.insert(INSERT, '\n')
         text_area2.yview('end')
-        data2.append(ser2.name)
-        
+        data2.insert(0, ser2.name)
 
 def Time():
     global seconds
@@ -137,10 +140,11 @@ def Time():
     seconds = (now - now.replace(hour=0, minute=0, second=0, microsecond=0)).seconds
 
 def CombineWrite():
-    global WholeData
-    WholeData = data1 + data2
-    WholeData.append(seconds)
+    global data1, data2
+    WholeData = data1 + data2 
+    WholeData.insert(0, seconds)
     z.writerow(WholeData)
+    print(WholeData)
     
 
 def scanning():
@@ -149,7 +153,6 @@ def scanning():
         Time()
         Read2()
         CombineWrite()
-
     # After 1 second, call scanning again (create a recursive loop)
     root.after(frequency, scanning)
 
@@ -171,7 +174,7 @@ def stop():
     ser2.close()
     f.close() #closes csv file
     print(ser1.name + " Closed")
-    print(ser2.name + "Closed")
+    print(ser2.name + " Closed")
 
 root = Tk() #creates tk gui
 root.title("COM State") #title 
