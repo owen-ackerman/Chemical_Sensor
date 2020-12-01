@@ -191,7 +191,7 @@ TestCOM1.grid(column=2, row =0)
 TestCOM2.grid(column=3, row = 0)
 
 w1 = Label(root,  
-         text = "ScrolledText Widget 1",  
+         text = ser1.name + " Output",  
          font = ("Times New Roman", 12),  
          background = 'blue', 
          padx = 40, 
@@ -199,7 +199,7 @@ w1 = Label(root,
 w1.grid(row = 2, columnspan=2, sticky=W)
 
 w2 = Label(root,  
-         text = "ScrolledText Widget 2",  
+         text = ser2.name + " Output",  
          font = ("Times New Roman", 12),  
          background = 'purple', 
          padx = 40, 
