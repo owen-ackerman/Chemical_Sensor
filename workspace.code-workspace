@@ -1,0 +1,16 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"name": "AIRmon LEDSensor",
+			"path": "..\\..\\..\\..\\Documents\\PlatformIO\\Projects\\AIRmon LEDSensor"
+		},
+		{
+			"name": "201124-123540-uno",
+			"path": "..\\..\\..\\..\\Documents\\PlatformIO\\Projects\\201124-123540-uno"
+		}
+	],
+	"settings": {}
+}
