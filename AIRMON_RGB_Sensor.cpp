@@ -1,4 +1,4 @@
-
+#include <Arduino.h>
 #include "Adafruit_CCS811.h"
 
 Adafruit_CCS811 ccs;
