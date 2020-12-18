@@ -51,7 +51,10 @@ global seconds #timestamp for data collection
 global data1, data2 #incoming data from sensor 1 and sensor 2
 
 frequency = 1000 #scanning and data collection frequency, miliseconds
-state = False  # Global flag
+state = False
+state1 = False  # button flag
+state2 = False # Button flag
+
 ser1 = serial.Serial() # Initialize serial port
 ser2 = serial.Serial()
 ser1.baudrate = 115200 # Set baud rate
@@ -61,6 +64,7 @@ ser2.port = 'COM7' #set com port
 data1 = [] # initialize variable data as list
 data2 = [] #
 header = ['Time Stamp', 'Data Source ID','CO2: ppm,', 'TVOC: ppb,', 'Data Source ID','CO2: ppm,', 'TVOC: ppb,'] #initialize the header list
+SinglePortHeader = ['Time Stamp', 'Data Source ID','CO2: ppm,', 'TVOC: ppb,']
 Scrolling_Header = ['Time Stamp', 'CO2: ppm,', 'TVOC: ppb,']
 
 
@@ -94,13 +98,31 @@ def FileNameCreator():
     filename = (y + 'Data%d.csv' % i) #sets the filename with the modified incrementor
 
 
-def File():
+def DiPortFile():
     FileNameCreator()
     global f
     global z
     f = open(filename, 'w')  #open file, erase contents when writing
     z = csv.writer(f) #tells the csv.writer which function to modify
     z.writerow(header) #writes the list header in the csv file
+
+def File1():
+    FileNameCreator()
+    filename1 = ser1.name + filename
+    global f1
+    global z1
+    f1 = open(filename1, 'w')
+    z1 = csv.writer(f1)
+    z1.writerow(SinglePortHeader)
+
+def File2():   
+    FileNameCreator()
+    filename2 = ser2.name + filename
+    global f2
+    global z2
+    f2 = open(filename2, 'w')
+    z2 = csv.writer(f2)
+    z2.writerow(SinglePortHeader)
 
 def Read1():
     global data1
@@ -142,24 +164,53 @@ def CombineWrite():
     WholeData.insert(0, seconds)
     z.writerow(WholeData)
     print(WholeData)
-    
+
+def Data1Write():
+    global data1
+    data1.insert(0, seconds)
+    z1.writerow(data1)
+    print(data1)
+
+def Data2Write():
+    global data2
+    data2.insert(0, seconds)
+    z2.writerow(data2)
+    print(data2)
 
 def scanning():
+    
     if state:  # If start button was clicked
         Read1()
         Time()
         Read2()
         CombineWrite()
+        if state1:
+            text_area1.insert(INSERT, 'please do not open' + ser1.name + 'while diPort is running')
+            text_area1.insert(INSERT, '\n')
+        if state2:
+            text_area2.insert(INSERT, 'please do not open' + ser2.name + 'while diPort is running')
+            text_area2.insert(INSERT, '\n')
+
+    if state1:
+        Read1()
+        Time()
+        Data1Write()
+
+    if state2:
+        Read2()
+        Time()
+        Data2Write()
+    
     # After 1 second, call scanning again (create a recursive loop)
     root.after(frequency, scanning)
 
 def start():
     """Enable scanning by setting the global flag to True."""
-    File()
+    DiPortFile()
     ser1.open() #opens serial port
     ser2.open()
-    print(ser1.name + "Opened")
-    print(ser2.name + "Opened")
+    print(ser1.name + " Opened")
+    print(ser2.name + " Opened")
     global state
     state = True
     
@@ -173,17 +224,55 @@ def stop():
     print(ser1.name + " Closed")
     print(ser2.name + " Closed")
 
+def start1():
+    global state1
+    state1 = True
+    ser1.open()
+    print(ser1.name + ' Opened')
+    File1()
+
+def stop1():
+    global state1
+    state1 = False
+    ser1.close()
+    f1.close()
+    print(ser1.name + " Closed")
+
+def start2():
+    global state2
+    state2 = True
+    ser2.open()
+    print(ser2.name + ' Opened')
+    File2()
+
+def stop2():
+    global state2
+    state2 = False
+    ser2.close()
+    f2.close()
+    print(ser2.name + " Closed")
+
+
 root = Tk() #creates tk gui
 root.title("COM State") #title 
 root.geometry("600x500") #window size
 
-start = Button(text="Open: COM", command=start, fg="green") #buttons widget.
-stop = Button(text="Close: COM", command=stop, fg="red")
+start = Button(text="DiPorts Open", command=start, fg="green")
+stop = Button(text="DiPorts Close", command=stop, fg="red")
+start1 = Button(text="Open:" + ser1.name, command=start1, fg="green") #buttons widget.
+stop1 = Button(text="Close:" + ser1.name, command=stop1, fg="red")
+start2 = Button(text="Open:" + ser2.name, command=start2, fg="green")
+stop2 = Button(text="Close:" + ser2.name, command=stop2, fg="red")
+
 TestCOM1 = Button(text="Test:" + ser1.name, command= TestCOM1, fg="purple")
 TestCOM2 = Button(text="Test:" + ser2.name, command= TestCOM2, fg="purple")
 
-start.grid(column = 0, row = 0) #places buttons with the .grid() function
-stop.grid(column = 1, row = 0, sticky=W)
+start.grid(column = 0, row = 0)
+stop.grid(column = 1, row = 0)
+start1.grid(column = 0, row = 1) #places buttons with the .grid() function
+stop1.grid(column = 1, row = 1, sticky=W)
+start2.grid(column = 2, row = 1)
+stop2.grid(column = 3, row = 1, sticky=W)
 TestCOM1.grid(column=2, row =0)
 TestCOM2.grid(column=3, row = 0)
 
