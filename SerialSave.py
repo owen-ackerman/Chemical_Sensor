@@ -46,20 +46,9 @@ import tkinter.scrolledtext as st
 from datetime import datetime
 from time import sleep
 
-<<<<<<< Updated upstream
+
 global seconds #timestamp for data collection
 global data1, data2 #incoming data from sensor 1 and sensor 2
-=======
-frequency = 5000 #scanning and data collection frequency, miliseconds
-state = False  # Global flag
-ser = serial.Serial() # Initialize serial port
-ser.baudrate = 115200 # Set baud rate
-ser.port = 'COM3' #set com port
-data = [] # initialize variable data as list
-header = ['CO2: ppm', 'TVOC: ppb', 'Time'] #initialize the header list
->>>>>>> Stashed changes
-global f # variable set to the csv file
-global z # variable set to the csv modifier (writer etc.)
 
 frequency = 1000 #scanning and data collection frequency, miliseconds
 state = False  # Global flag
@@ -73,8 +62,6 @@ data1 = [] # initialize variable data as list
 data2 = [] #
 header = ['Time Stamp', 'Data Source ID','CO2: ppm,', 'TVOC: ppb,', 'Data Source ID','CO2: ppm,', 'TVOC: ppb,'] #initialize the header list
 Scrolling_Header = ['Time Stamp', 'CO2: ppm,', 'TVOC: ppb,']
-
-
 
 
 def TestCOM1():
