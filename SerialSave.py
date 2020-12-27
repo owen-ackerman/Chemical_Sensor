@@ -57,8 +57,8 @@ state2 = False # Button flag
 
 ser1 = serial.Serial() # Initialize serial port
 ser2 = serial.Serial()
-ser1.baudrate = 115200 # Set baud rate
-ser2.baudrate = 115200
+ser1.baudrate = 9600 # Set baud rate
+ser2.baudrate = 9600
 ser1.port = 'COM5'
 ser2.port = 'COM7' #set com port
 data1 = [] # initialize variable data as list
@@ -137,8 +137,8 @@ def Read1():
         text_area1.insert(INSERT, '\n')
         text_area1.yview('end')
         data1.insert(0, ser1.name)
-        
-        
+
+
 def Read2():
     global data2
     ser2.write(b'B')
@@ -171,11 +171,6 @@ def Data1Write():
     z1.writerow(data1)
     print(data1)
 
-def Data2Write():
-    global data2
-    data2.insert(0, seconds)
-    z2.writerow(data2)
-    print(data2)
 
 def scanning():
     
@@ -251,7 +246,6 @@ def stop2():
     ser2.close()
     f2.close()
     print(ser2.name + " Closed")
-
 
 root = Tk() #creates tk gui
 root.title("COM State") #title 
