@@ -8,8 +8,8 @@ SerialPortPrint():
 This function takes the serial class initialized as a variable for an input. It then processes the
 raw input data and outputs a list of 2 integers [CO2: PPM, TVOC: PPB].
 
-The main logic of this program asks if test(ser) is true, if this is true it loops and prints the
-SerialPortPrint() function along with a delay function for the frequency of reading.
+The main logic of this program asks if test(ser) is true, than loop and print the
+SerialPortPrint() function with a delay for the frequency of reading.
 
 *Note*
 In order to close the serial port, ser.close() must be called. So this mechanism must be built in. 
